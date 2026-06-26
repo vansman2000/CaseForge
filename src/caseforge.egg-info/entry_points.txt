@@ -1,0 +1,2 @@
+[console_scripts]
+caseforge = caseforge.app:main

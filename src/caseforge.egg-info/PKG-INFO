@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: caseforge
+Version: 0.1.0a1
+Summary: Linux-first evidence management and litigation binder generator.
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: PySide6>=6.8
+
+# CaseForge
