@@ -1,89 +1,49 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDockWidget,
-    QLabel,
-    QListWidget,
     QMainWindow,
-    QMenu,
-    QMenuBar,
-    QStatusBar,
     QTextEdit,
 )
 
+from caseforge.gui.menu_bar import build_menu_bar
+from caseforge.gui.status_bar import build_status_bar
+from caseforge.gui.case_explorer import CaseExplorer
+from caseforge.gui.preview_panel import PreviewPanel
+from caseforge.gui.properties_panel import PropertiesPanel
+
 
 class MainWindow(QMainWindow):
+    """Main application window."""
+
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("CaseForge")
-        self.resize(1400, 900)
+        self.resize(1600, 900)
 
-        self._create_menu()
-        self._create_panels()
+        self._create_ui()
 
-        status = QStatusBar()
-        status.showMessage("Ready")
-        self.setStatusBar(status)
+    def _create_ui(self):
 
-    def _create_menu(self):
+        build_menu_bar(self)
 
-        menu = QMenuBar()
+        self.setStatusBar(build_status_bar())
 
-        file_menu = QMenu("&File", self)
-        file_menu.addAction("New Case")
-        file_menu.addAction("Open Case")
-        file_menu.addSeparator()
-        file_menu.addAction("Import Evidence ZIP")
-        file_menu.addSeparator()
-        file_menu.addAction("Exit", self.close)
+        self.preview = PreviewPanel()
+        self.setCentralWidget(self.preview)
 
-        case_menu = QMenu("&Case", self)
-        build_menu = QMenu("&Build", self)
-        tools_menu = QMenu("&Tools", self)
-        help_menu = QMenu("&Help", self)
+        self.case_explorer = CaseExplorer()
 
-        menu.addMenu(file_menu)
-        menu.addMenu(case_menu)
-        menu.addMenu(build_menu)
-        menu.addMenu(tools_menu)
-        menu.addMenu(help_menu)
+        dock = QDockWidget("Case Explorer", self)
+        dock.setWidget(self.case_explorer)
+        dock.setMinimumWidth(250)
 
-        self.setMenuBar(menu)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
 
-    def _create_panels(self):
+        self.properties = PropertiesPanel()
 
-        case_tree = QListWidget()
+        dock = QDockWidget("Properties", self)
+        dock.setWidget(self.properties)
+        dock.setMinimumWidth(300)
 
-        case_tree.addItems([
-            "My Case",
-            "Evidence",
-            "Timeline",
-            "Damages",
-            "Transcripts",
-            "Binder",
-            "Reports",
-        ])
-
-        left = QDockWidget("Case Explorer", self)
-        left.setWidget(case_tree)
-        left.setMinimumWidth(250)
-
-        self.addDockWidget(Qt.LeftDockWidgetArea, left)
-
-        properties = QTextEdit()
-        properties.setReadOnly(True)
-
-        right = QDockWidget("Properties", self)
-        right.setWidget(properties)
-        right.setMinimumWidth(280)
-
-        self.addDockWidget(Qt.RightDockWidgetArea, right)
-
-        preview = QTextEdit()
-        preview.setReadOnly(True)
-        preview.setText(
-            "CaseForge\n\n"
-            "Evidence preview will appear here."
-        )
-
-        self.setCentralWidget(preview)
+        self.addDockWidget(Qt.RightDockWidgetArea, dock)
