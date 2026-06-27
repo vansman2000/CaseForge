@@ -15,39 +15,25 @@ class CaseExplorer(QTreeWidget):
 
         self.setHeaderHidden(True)
 
-        self._populate()
+    def load_case(self, case) -> None:
+        """Display a CaseForge project."""
 
-    def _populate(self) -> None:
+        self.clear()
 
-        case = QTreeWidgetItem(["My Case"])
+        root = QTreeWidgetItem([case.name])
 
-        evidence = QTreeWidgetItem(["Evidence"])
-        photos = QTreeWidgetItem(["Photos"])
-        pdfs = QTreeWidgetItem(["PDF Documents"])
-        audio = QTreeWidgetItem(["Audio"])
-        transcripts = QTreeWidgetItem(["Transcripts"])
+        folders = [
+            "Evidence",
+            "Photos",
+            "Audio",
+            "Video",
+            "Documents",
+            "Exhibits",
+        ]
 
-        evidence.addChildren([
-            photos,
-            pdfs,
-            audio,
-            transcripts,
-        ])
+        for folder in folders:
+            root.addChild(QTreeWidgetItem([folder]))
 
-        timeline = QTreeWidgetItem(["Timeline"])
-        damages = QTreeWidgetItem(["Damages"])
-        reports = QTreeWidgetItem(["Reports"])
-        binder = QTreeWidgetItem(["Binder"])
+        self.addTopLevelItem(root)
 
-        case.addChildren([
-            evidence,
-            timeline,
-            damages,
-            reports,
-            binder,
-        ])
-
-        self.addTopLevelItem(case)
-
-        case.setExpanded(True)
-        evidence.setExpanded(True)
+        root.setExpanded(True)

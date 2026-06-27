@@ -2,6 +2,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QFileDialog,
     QDockWidget,
     QMainWindow,
     QMessageBox,
@@ -13,7 +14,9 @@ from caseforge.gui.menu_bar import build_menu_bar
 from caseforge.gui.preview_panel import PreviewPanel
 from caseforge.gui.properties_panel import PropertiesPanel
 from caseforge.gui.status_bar import build_status_bar
+
 from caseforge.services.case_service import CaseService
+from caseforge.services.evidence_service import EvidenceService
 
 
 class MainWindow(QMainWindow):
@@ -23,6 +26,9 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.case_service = CaseService()
+        self.evidence_service = EvidenceService()
+
+        self.current_case = None
 
         self.setWindowTitle("CaseForge")
         self.resize(1600, 900)
@@ -34,32 +40,85 @@ class MainWindow(QMainWindow):
 
         dialog = NewCaseDialog(self)
 
-        if dialog.exec():
-            case_name = dialog.get_case_name()
+        if not dialog.exec():
+            return
 
-            if not case_name:
-                QMessageBox.warning(
-                    self,
-                    "CaseForge",
-                    "Please enter a case name.",
-                )
-                return
+        case_name = dialog.get_case_name().strip()
 
-            cases_folder = Path.home() / "CaseForgeCases"
-            cases_folder.mkdir(exist_ok=True)
-
-            case = self.case_service.create_case(
-                cases_folder,
-                case_name,
-            )
-
-            QMessageBox.information(
+        if not case_name:
+            QMessageBox.warning(
                 self,
-                "Case Created",
-                f'Created:\n\n{case.root}',
+                "CaseForge",
+                "Please enter a case name.",
             )
+            return
+
+        cases_folder = Path.home() / "CaseForgeCases"
+        cases_folder.mkdir(exist_ok=True)
+
+        case = self.case_service.create_case(
+            cases_folder,
+            case_name,
+        )
+
+        self.current_case = case
+
+        self.case_explorer.load_case(case)
+
+        QMessageBox.information(
+            self,
+            "Case Created",
+            f"Created:\n\n{case.root}",
+        )
+
+    def import_evidence(self) -> None:
+        """Import evidence into the current case."""
+
+        if self.current_case is None:
+            QMessageBox.warning(
+                self,
+                "CaseForge",
+                "Create or open a case first.",
+            )
+            return
+
+        files, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Import Evidence",
+        )
+
+        if not files:
+            return
+
+        try:
+            imported = self.evidence_service.import_files(
+                self.current_case,
+                files,
+            )
+
+            print("Imported files:")
+            for item in imported:
+                print(f"  {item}")
+
+            self.statusBar().showMessage(
+                f"Imported {len(imported)} file(s).",
+                5000,
+            )
+
+            self.case_explorer.load_case(self.current_case)
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Import Error",
+                str(e),
+            )
+
+            print("IMPORT ERROR:", e)
 
     def _create_ui(self) -> None:
+        """Build the main interface."""
+
         build_menu_bar(self)
 
         self.setStatusBar(build_status_bar())

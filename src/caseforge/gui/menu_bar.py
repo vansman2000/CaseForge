@@ -27,3 +27,8 @@ def build_menu_bar(window: QMainWindow) -> None:
     exit_action = QAction("Exit", window)
     exit_action.triggered.connect(window.close)
     file_menu.addAction(exit_action)
+
+    import_action = QAction("Import Evidence...", window)
+    import_action.triggered.connect(window.import_evidence)
+
+    file_menu.addAction(import_action)

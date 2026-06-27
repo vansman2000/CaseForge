@@ -18,13 +18,16 @@ class CaseService:
 
         project_root.mkdir(parents=True, exist_ok=True)
 
-        for folder in (
-            "evidence",
-            "generated",
-            "exports",
-            "transcripts",
-            "thumbnails",
-        ):
+        folders = [
+            "Evidence",
+            "Documents",
+            "Photos",
+            "Audio",
+            "Video",
+            "Exhibits",
+        ]
+
+        for folder in folders:
             (project_root / folder).mkdir(exist_ok=True)
 
         (project_root / "settings.json").write_text(
@@ -34,7 +37,6 @@ class CaseService:
             encoding="utf-8",
         )
 
-        # Placeholder until we introduce SQLite
         (project_root / "case.db").touch(exist_ok=True)
 
         return Case(
