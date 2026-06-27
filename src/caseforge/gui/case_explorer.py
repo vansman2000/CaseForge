@@ -4,6 +4,8 @@ Case Explorer
 Displays the navigation tree for the current case.
 """
 
+from pathlib import Path
+
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 
 
@@ -20,20 +22,25 @@ class CaseExplorer(QTreeWidget):
 
         self.clear()
 
-        root = QTreeWidgetItem([case.name])
+        case_item = QTreeWidgetItem([case.name])
+        self.addTopLevelItem(case_item)
 
-        folders = [
-            "Evidence",
-            "Photos",
-            "Audio",
-            "Video",
-            "Documents",
-            "Exhibits",
-        ]
+        # Show every folder in the case
+        for folder in sorted(case.root.iterdir()):
 
-        for folder in folders:
-            root.addChild(QTreeWidgetItem([folder]))
+            if not folder.is_dir():
+                continue
 
-        self.addTopLevelItem(root)
+            folder_item = QTreeWidgetItem([folder.name])
+            case_item.addChild(folder_item)
 
-        root.setExpanded(True)
+            # Show every file in that folder
+            for file in sorted(folder.iterdir()):
+
+                if file.is_file():
+                    file_item = QTreeWidgetItem([file.name])
+                    folder_item.addChild(file_item)
+
+            folder_item.setExpanded(True)
+
+        case_item.setExpanded(True)
