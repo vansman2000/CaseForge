@@ -96,10 +96,6 @@ class MainWindow(QMainWindow):
                 files,
             )
 
-            print("Imported files:")
-            for item in imported:
-                print(f"  {item}")
-
             self.statusBar().showMessage(
                 f"Imported {len(imported)} file(s).",
                 5000,
@@ -116,6 +112,14 @@ class MainWindow(QMainWindow):
 
             print("IMPORT ERROR:", e)
 
+    def on_tree_item_clicked(self, item, column):
+        """Preview the selected file."""
+
+        path = item.data(0, Qt.UserRole)
+
+        if path:
+            self.preview.preview_file(path)
+
     def _create_ui(self) -> None:
         """Build the main interface."""
 
@@ -127,6 +131,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.preview)
 
         self.case_explorer = CaseExplorer()
+        self.case_explorer.itemClicked.connect(
+            self.on_tree_item_clicked
+        )
 
         explorer = QDockWidget("Case Explorer", self)
         explorer.setWidget(self.case_explorer)
