@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from caseforge.project.case import Case
+from caseforge.repositories.evidence_repository import EvidenceRepository
 
 
 class CaseService:
@@ -37,7 +38,10 @@ class CaseService:
             encoding="utf-8",
         )
 
-        (project_root / "case.db").touch(exist_ok=True)
+        database_path = project_root / "case.db"
+
+        # Initialize the SQLite database and schema.
+        EvidenceRepository(database_path)
 
         return Case(
             name=case_name,

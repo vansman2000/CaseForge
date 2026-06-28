@@ -4,12 +4,38 @@ Case Explorer
 Displays the navigation tree for the current case.
 """
 
+from datetime import datetime
+from pathlib import Path
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
+
+from caseforge.models.evidence import Evidence
 
 
 class CaseExplorer(QTreeWidget):
     """Navigation tree displayed on the left side of the application."""
+
+    FILE_TYPES = {
+        ".jpg": "Photos",
+        ".jpeg": "Photos",
+        ".png": "Photos",
+        ".gif": "Photos",
+        ".bmp": "Photos",
+
+        ".pdf": "Documents",
+        ".doc": "Documents",
+        ".docx": "Documents",
+        ".txt": "Documents",
+
+        ".mp3": "Audio",
+        ".wav": "Audio",
+        ".m4a": "Audio",
+
+        ".mp4": "Video",
+        ".mov": "Video",
+        ".avi": "Video",
+    }
 
     def __init__(self):
         super().__init__()
@@ -37,13 +63,27 @@ class CaseExplorer(QTreeWidget):
                 if not file.is_file():
                     continue
 
-                file_item = QTreeWidgetItem([file.name])
+                evidence = Evidence(
+                    filename=file.name,
+                    path=file,
+                    evidence_type=self.FILE_TYPES.get(
+                        file.suffix.lower(),
+                        folder.name,
+                    ),
+                    imported=datetime.fromtimestamp(
+                        file.stat().st_ctime
+                    ),
+                )
 
-                # Store the full file path in the tree item
+                file_item = QTreeWidgetItem(
+                    [evidence.display_name]
+                )
+
+                # Store the Evidence object instead of a path
                 file_item.setData(
                     0,
                     Qt.UserRole,
-                    str(file),
+                    evidence,
                 )
 
                 folder_item.addChild(file_item)

@@ -18,6 +18,8 @@ from caseforge.gui.status_bar import build_status_bar
 from caseforge.services.case_service import CaseService
 from caseforge.services.evidence_service import EvidenceService
 
+from caseforge.models.evidence import Evidence
+
 
 class MainWindow(QMainWindow):
     """Main application window."""
@@ -113,12 +115,22 @@ class MainWindow(QMainWindow):
             print("IMPORT ERROR:", e)
 
     def on_tree_item_clicked(self, item, column):
-        """Preview the selected file."""
+        """Preview the selected evidence."""
 
-        path = item.data(0, Qt.UserRole)
+        evidence = item.data(0, Qt.UserRole)
 
-        if path:
-            self.preview.preview_file(path)
+        if isinstance(evidence, Evidence):
+
+            self.preview.preview_file(
+                str(evidence.path)
+            )
+
+            self.properties.show_file(
+                str(evidence.path)
+            )
+
+        else:
+            self.properties.clear_properties()
 
     def _create_ui(self) -> None:
         """Build the main interface."""
@@ -131,20 +143,35 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.preview)
 
         self.case_explorer = CaseExplorer()
+
         self.case_explorer.itemClicked.connect(
             self.on_tree_item_clicked
         )
 
-        explorer = QDockWidget("Case Explorer", self)
+        explorer = QDockWidget(
+            "Case Explorer",
+            self,
+        )
+
         explorer.setWidget(self.case_explorer)
         explorer.setMinimumWidth(250)
 
-        self.addDockWidget(Qt.LeftDockWidgetArea, explorer)
+        self.addDockWidget(
+            Qt.LeftDockWidgetArea,
+            explorer,
+        )
 
         self.properties = PropertiesPanel()
 
-        properties = QDockWidget("Properties", self)
+        properties = QDockWidget(
+            "Properties",
+            self,
+        )
+
         properties.setWidget(self.properties)
         properties.setMinimumWidth(300)
 
-        self.addDockWidget(Qt.RightDockWidgetArea, properties)
+        self.addDockWidget(
+            Qt.RightDockWidgetArea,
+            properties,
+        )

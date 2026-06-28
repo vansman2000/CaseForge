@@ -4,8 +4,12 @@ Evidence Service
 Imports evidence into the current case.
 """
 
+from datetime import datetime
 from pathlib import Path
 import shutil
+
+from caseforge.models.evidence import Evidence
+from caseforge.repositories.evidence_repository import EvidenceRepository
 
 
 class EvidenceService:
@@ -34,10 +38,13 @@ class EvidenceService:
 
     def import_files(self, case, files):
         """
-        Import files into the appropriate folders.
-
-        Returns a list of imported file paths.
+        Import files into the appropriate folders and
+        save them to the database.
         """
+
+        repository = EvidenceRepository(
+            case.root / "case.db"
+        )
 
         imported = []
 
@@ -58,8 +65,22 @@ class EvidenceService:
                 source.name
             )
 
+            destination.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
             shutil.copy2(source, destination)
 
-            imported.append(destination)
+            evidence = Evidence(
+                filename=destination.name,
+                path=destination,
+                evidence_type=folder,
+                imported=datetime.now(),
+            )
+
+            repository.save(evidence)
+
+            imported.append(evidence)
 
         return imported
